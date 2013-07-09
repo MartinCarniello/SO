@@ -27,6 +27,18 @@ class PCBPriority():
     
     def setPC(self, pc):
         self.getPCB().setPC(pc)
+        
+    def getBase(self):
+        return self.getPCB().getBase()
+        
+    def setBase(self, base):
+        self.getPCB().setBase(base)
+        
+    def getLimit(self):
+        return self.getPCB().getLimit()
+    
+    def setLimit(self, limit):
+        self.getPCB().setLimit(limit)
     
     def isEnded(self):
         return self.getPC() == self.getNumberOfInstructions()

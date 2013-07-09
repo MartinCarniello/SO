@@ -43,3 +43,6 @@ class LongTerm():
 
     def getBlockList(self, pid):
         return self.getHdd().getProcessPages(pid)
+    
+    def removeProcess(self, pcb):
+        self.getMmu().removeProcess(pcb)

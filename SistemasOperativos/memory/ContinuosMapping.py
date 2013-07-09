@@ -9,11 +9,18 @@ from memory.MemoryBlock import FreeBlock
 from memory.MemoryBlock import OccupedBlock
 from memory.MemoryBlock import Block
 from pcb.PCB import PCB
+from pcb.PCBPriority import PCBPriority
 
 class ContinuosMapping(MMU):
     def __init__(self, freeBlocks, occupedBlocks, memory):
         MMU.__init__(self, memory)
         self.freeBlocks = freeBlocks
+        self.occupedBlocks = occupedBlocks
+        
+    def setFreeBlocks(self, freeBlocks):
+        self.freeBlocks = freeBlocks
+        
+    def setOccupedBlocks(self, occupedBlocks):
         self.occupedBlocks = occupedBlocks
         
     def getMemory(self):
@@ -53,41 +60,63 @@ class ContinuosMapping(MMU):
 
     def memoryCompact(self):
 
-        firstBlock = self.getOccupedBlocks().getBlocks()[0]
+        firstOccupedBlock = self.getOccupedBlocks().getBlocks()[0]
 
-        if firstBlock[1].getBase() != 0:
+        if firstOccupedBlock[1].getBase() != 0:
 
-            sizeOfFirstBlock = firstBlock[1].size()
+            sizeOfFirstBlock = firstOccupedBlock[1].size()
+            
+            oldBase = firstOccupedBlock[1].getBase()
 
             base = 0
             limit = sizeOfFirstBlock - 1
 
-            firstBlock[1].setBase(base)
-            firstBlock[1].setLimit(limit)
-            firstBlock[0].setBase(base)
-            firstBlock[0].setLimit(limit)
+            firstOccupedBlock[1].setBase(base)
+            firstOccupedBlock[1].setLimit(limit)
+            firstOccupedBlock[0].setBase(base)
+            firstOccupedBlock[0].setLimit(limit)
+            
+            self.moveBlockInMemory(oldBase, base, limit)
 
-        for block in self.getOccupedBlocks().getBlocks()[1:len(self.getOccupedBlocks())]:
+        if self.getOccupedBlocks().size() > 1:
+            
+            for block in self.getOccupedBlocks().getBlocks()[1:self.getOccupedBlocks().size()]:
+    
+                oldBase = block[1].getBase()
+    
+                movement = block[1].getBase() - limit - 1
+    
+                newBase = block[1].getBase() - movement
+    
+                newLimit = block[1].getLimit() - movement
+    
+                block[1].setBase(newBase)
+    
+                block[1].setLimit(newLimit)
+    
+                limit = newLimit
+    
+                block[0].setBase(newBase)
+                block[0].setLimit(newLimit)
+                
+                self.moveBlockInMemory(oldBase, newBase, newLimit)
 
-            movement = block[1].getBase() - limit - 1
+        newBlock = Block(limit + 1, self.getMemory().getSize() - 1)
+        newFreeBlock = FreeBlock()
+        newFreeBlock.put(newBlock)
+        self.setFreeBlocks(newFreeBlock)
 
-            newBase = block[1].getBase() - movement
 
-            newLimit = block[1].getLimit() - movement
-
-            block[1].setBase(newBase)
-
-            block[1].setLimit(newLimit)
-
-            limit = newLimit
-
-            block[0].setBase(newBase)
-            block[0].setLimit(newLimit)
-
-        # newBlock = Block(limit, self.getMemory().size())
-        # newFreeBlock = FreeBlock().put(newBlock)
-        # self.setFreeBlocks(newFreeBlock)
-
+    def moveBlockInMemory(self, oldBase, base, limit):
+        b = base
+        ob = oldBase
+        
+        while b <= limit:
+            self.getMemory().getMemoryFrames()[b] = self.getMemory().getMemoryFrames()[ob]
+            b += 1
+            ob += 1
+            
+        
 
     def load(self, blockList, pid):
         
@@ -108,6 +137,7 @@ class ContinuosMapping(MMU):
 
         memBase = memBlock.getBase()
         blockSize = blockList.size()
+        priority = blockList.getPriority()
 
         if blockList.size() < memBlock.size():
             newFreeBlock = Block(memBase + blockSize, memBlock.getLimit())
@@ -116,21 +146,35 @@ class ContinuosMapping(MMU):
         self.getFreeBlocks().remove(memBlock)
         
         newOccupedBlock = Block(memBase, memBase + blockSize - 1)
-        self.getOccupedBlocks().put(pid, newOccupedBlock)
         
         self.getMemory().assignInMemory(blockList, memBase)
         
         newPCB = PCB(pid, blockSize, memBase, memBase + blockSize - 1)
         
+        if priority != None:
+            newPCB = PCBPriority(newPCB, priority)
+        
+        self.getOccupedBlocks().put(newPCB, newOccupedBlock)
+        
         return newPCB
     
     def fetchInstruction(self, pcb):
         
-        instructionIndex = pcb.getBase() + pcb.getPC() 
+        instructionIndex = pcb.getBase() + pcb.getPC()
         
         return self.getMemory().getMemoryFrames()[instructionIndex]
-
-
+    
+    def removeProcess(self, pcb):
+        
+        occupedBlocks = OccupedBlock()
+        
+        for block in self.getOccupedBlocks().getBlocks():
+            if block[1].getBase() != pcb.getBase():
+                occupedBlocks.put(block[0], block[1])
+                
+        self.setOccupedBlocks(occupedBlocks)
+                
+                
 
 class FirstFit(ContinuosMapping):
     def getFreeBlock(self, size):

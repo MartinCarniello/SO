@@ -97,6 +97,9 @@ class Kernel():
     def createNewProcess(self, pid):
         self.getLongTerm().load(pid)
         
+    def removeProcessFromMemory(self, pcb):
+        self.getLongTerm().removeProcess(pcb)        
+        
     def turnToKernelMode(self):
         self.setKernelMode(True)
         

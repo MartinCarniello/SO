@@ -25,8 +25,15 @@ class HDD:
         
     
 class ProcessPages():
-    def __init__(self):
+    def __init__(self, priority=None):
         self.pages = []
+        self.priority = priority
+        
+    def getPriority(self):
+        return self.priority
+    
+    def setPriority(self, priority):
+        self.priority = priority
         
     def getPages(self):
         return self.pages

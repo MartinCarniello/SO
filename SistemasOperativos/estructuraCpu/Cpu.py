@@ -6,7 +6,7 @@ Created on 27/04/2013
 
 from kernel.CPUToEndInterruption import CPUToEndInterruption
 from kernel.CPUToIOInterruption import CPUToIOInterruption
-from time import gmtime, strftime
+import logging
 
 class Cpu():
 
@@ -54,17 +54,22 @@ class Cpu():
             ins = self.getMmu().fetchInstruction(self.getPCB())
 
             if ins.isCpuInstruction():
-                # self.instructionExecute(ins)
-                print("Se esta ejecutando la instruccion " + str(pcbPC + 1) + " del proceso " + str(pcbID) + " en CPU")
-                print(strftime("%a, %d %b %Y %X +0000", gmtime()).rsplit()[4] + " El resultado es: " + ins.getResult())
+
+                logging.basicConfig(filename='../executionLog.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+                logging.info('Se esta ejecutando la instruccion ' + str(pcbPC + 1) + ' del proceso ' + str(pcbID) + ' en CPU')
+                logging.info("El resultado es: " + ins.getResult())
+                
                 self.getPCB().nextInstruction()
 
                 if self.getPCB().isEnded():
-                    print("El proceso " + str(pcbID) + " ha terminado")
+                    logging.info("El proceso " + str(pcbID) + " ha terminado")
+                    print("El proceso con ID " + str(pcbID) + " se ha terminado de ejecutar")
+
                     self.getKernel().handle(CPUToEndInterruption())
 
             else:
-                print("La instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " ha ido a ejecutarse en I/O")
+                logging.info("La instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " ha ido a ejecutarse en I/O")
+
                 self.getKernel().handle(CPUToIOInterruption())
 
 

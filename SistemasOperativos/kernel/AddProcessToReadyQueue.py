@@ -22,4 +22,5 @@ class AddProcessToReadyQueue(Interruption):
         if not kernel.getIsRunning():
             kernel.turnOn()
         else:
-            kernel.contextSwitch()
+            if kernel.getCpu().getPCB() == None:
+                kernel.contextSwitch()

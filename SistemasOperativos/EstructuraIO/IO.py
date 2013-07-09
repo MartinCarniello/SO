@@ -9,7 +9,7 @@ import time
 from kernel.IOToReadyInterruption import IOToReadyInterruption
 from kernel.IOToEndInterruption import IOToEndInterruption
 from EstructuraIO.Waiting import Waiting
-from time import gmtime, strftime
+import logging
 
 class IO(threading.Thread):
     def __init__(self, mmu):
@@ -61,15 +61,19 @@ class IO(threading.Thread):
 
                 ins = self.getMmu().fetchInstruction(self.getPCB())
 
-                print("Se esta ejecutando la instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " en I/O")
-                print(strftime("%a, %d %b %Y %X +0000", gmtime()).rsplit()[4] + " El resultado es: " + ins.getResult())
+                logging.basicConfig(filename='../executionLog.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+                logging.info("Se esta ejecutando la instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " en I/O")
+                logging.info("El resultado es: " + ins.getResult())
+                
                 self.getPCB().nextInstruction()
 
                 self.instructionExecute(ins)
 
-                print("Se termino de ejecutar la instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " en I/O")
+                logging.info("Se termino de ejecutar la instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " en I/O")
 
                 if self.getPCB().isEnded():
+                    print("El proceso con ID " + str(pcbID) + " se ha terminado de ejecutar")
                     self.getKernel().handle(IOToEndInterruption())
                 else:
                     self.getKernel().handle(IOToReadyInterruption())
