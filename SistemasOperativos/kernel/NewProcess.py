@@ -14,4 +14,6 @@ class NewProcess(Interruption):
         return self.pid
     
     def interruptionMethod(self, kernel):
+        """Crea un nuevo proceso para enviarlo a la
+           cola de Ready"""
         kernel.createNewProcess(self.getPID())

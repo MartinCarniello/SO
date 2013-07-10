@@ -5,6 +5,8 @@ Created on 11/05/2013
 '''
 
 class PCBPriority():
+    
+    """Constructor"""
     def __init__(self, pcb, priority):
         self.pcb = pcb
         

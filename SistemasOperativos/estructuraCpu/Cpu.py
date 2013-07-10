@@ -10,6 +10,7 @@ import logging
 
 class Cpu():
 
+    """Getters y Setters"""
     def getPCB(self):
         return self.pcb
 
@@ -31,6 +32,8 @@ class Cpu():
     def isOccuped(self):
         return self.occuped
 
+
+    """Constructor"""
     def __init__(self, mmu):
         self.occuped = False
         self.kernel = None
@@ -46,6 +49,14 @@ class Cpu():
         self.setOccuped(True)
 
     def executionCycle(self):
+        """Ejecuta un ciclo de instruccion, el cual es enviado por el clock.Levanta
+           Interrupciones cuando ejecuta la ultima instruccion del pcb para enviar
+           el mismo a End, otra cuando la instruccion es de entrada/salida, el pcb
+           es enviado a la cola de espera de IO, y otra cuando es usada la politica
+           de ejecucion Round Robin para enviar el pcb a Ready a costa del Quantum. 
+           El logueo de cada resultado del ciclo es logueado en un archivo de texto 
+           que se encuentra en la carpeta src con el nombre de executionLog.log"""
+        
         if self.isOccuped() and self.getKernel().isUserMode():
 
             pcbID = self.getPCB().getPID()
@@ -71,8 +82,3 @@ class Cpu():
                 logging.info("La instruccion " + str(pcbPC) + " del proceso " + str(pcbID) + " ha ido a ejecutarse en I/O")
 
                 self.getKernel().handle(CPUToIOInterruption())
-
-
-
-    def instructionExecute(self, instruction):
-        pass

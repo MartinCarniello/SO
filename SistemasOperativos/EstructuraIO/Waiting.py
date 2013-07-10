@@ -7,11 +7,15 @@ Created on 04/05/2013
 import Queue
 
 class Waiting():
-    def __init__(self):
-        self.queue = Queue.Queue()
-        
+    
+    """Getters y Setters"""
     def getQueue(self):
         return self.queue
+    
+    
+    """Constructor"""
+    def __init__(self):
+        self.queue = Queue.Queue()
         
     def put(self, pcb):
         self.getQueue().put(pcb)

@@ -12,14 +12,8 @@ from EstructuraIO.Waiting import Waiting
 import logging
 
 class IO(threading.Thread):
-    def __init__(self, mmu):
-        threading.Thread.__init__(self)
-        self.pcb = None
-        self.kernel = None
-        self.waiting = Waiting()
-        self.running = True
-        self.mmu = mmu
 
+    """Getters y Setters"""    
     def getRunning(self):
         return self.running
 
@@ -44,14 +38,32 @@ class IO(threading.Thread):
     def getMmu(self):
         return self.mmu
 
+    
+    """Constructor"""
+    def __init__(self, mmu):
+        threading.Thread.__init__(self)
+        self.pcb = None
+        self.kernel = None
+        self.waiting = Waiting()
+        self.running = True
+        self.mmu = mmu
+
+    
     def restart(self):
         self.setPCB(None)
 
     def startUp(self):
+        """Hace un start del thread"""
         self.setRunning(True)
         self.start()
 
     def run(self):
+        """Esta corriendo en un loop infinito, y cuando la cola de waiting tiene
+           pcbs para ejecutarlos, los toma y los ejecuta. Levanta interrupciones
+           cuando termina de ejecutar un ciclo, si el pcb no tiene mas instrucciones
+           para ejecutar, envia el pcb a End, de lo contrario lo envia a Ready. Loguea
+           la informacion de la ejecucion en un archivo en la carpeta src llamado
+           executionLog.log"""
         while(self.getRunning()):
             if self.getKernel().isUserMode() and (not self.getWaiting().isEmpty()):
                 self.setPCB(self.getWaiting().get())

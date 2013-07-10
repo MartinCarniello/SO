@@ -5,10 +5,8 @@ Created on 10/06/2013
 '''
 
 class Block():
-    def __init__(self, base, limit):
-        self.base = base
-        self.limit = limit
-        
+    
+    """Getters y Setters"""
     def getBase(self):
         return self.base
     
@@ -21,15 +19,26 @@ class Block():
     def setLimit(self, limit):
         self.limit = limit
     
+    """Constructor"""
+    def __init__(self, base, limit):
+        self.base = base
+        self.limit = limit
+        
+    
     def size(self):
         return self.getLimit() - self.getBase() + 1
     
 class FreeBlock():
+
+    """Getters y Setters"""
+    def getBlocks(self):
+        return self.blocks
+    
+    """Constructor"""
     def __init__(self):
         self.blocks = []
         
-    def getBlocks(self):
-        return self.blocks
+
     
     def put(self, aBlock):
         self.getBlocks().append(aBlock)
@@ -44,11 +53,15 @@ class FreeBlock():
         return len(self.getBlocks())
     
 class OccupedBlock():
+    
+    """Getters y Setters"""
+    def getBlocks(self):
+        return self.blocks
+    
+    """Constructor"""
     def __init__(self):
         self.blocks = []
         
-    def getBlocks(self):
-        return self.blocks
     
     def put(self, pcb, aBlock):
         self.getBlocks().append((pcb, aBlock))

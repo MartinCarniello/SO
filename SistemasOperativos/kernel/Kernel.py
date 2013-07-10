@@ -6,6 +6,7 @@ Created on 11/05/2013
 
 class Kernel():
     
+    """Getters y Setters"""
     def getCpu(self):
         return self.cpu
     
@@ -41,7 +42,15 @@ class Kernel():
     
     def setLongTerm(self, longTerm):
         self.longTerm = longTerm
+        
+    def getIsRunning(self):
+        return self.isRunning
     
+    def setIsRunning(self, value):
+        self.isRunning = value
+    
+    
+    """Constructor"""
     def __init__(self, scheduler, cpu, io, end, clock, longTerm, shell):
         self.scheduler = scheduler
         scheduler.getExecutionPolitic().setKernel(self)
@@ -58,13 +67,9 @@ class Kernel():
         self.shell = shell
         shell.setKernel(self)
         
-    def getIsRunning(self):
-        return self.isRunning
-    
-    def setIsRunning(self, value):
-        self.isRunning = value
         
     def handle(self, interruption):
+        """Manejador de interrupciones"""
         interruption.doIt(self)
         
     def contextSwitch(self):
@@ -80,24 +85,33 @@ class Kernel():
         self.getIO().restart()
         
     def sendPCBFromCPUToEnd(self):
+        """Manda un pcb desde el cpu hasta la cola de End"""
         self.getEnd().put(self.getCpu().getPCB())
         
     def sendPCBFromIOToEnd(self):
+        """Manda el pcb desde IO a la cola de End"""
         self.getEnd().put(self.getIO().getPCB())
         
     def sendPCBToReady(self):
+        """Manda el pcb desde IO a la cola de Ready"""
         self.getScheduler().put(self.getIO().getPCB())
         
     def sendPCBToWaiting(self):
+        """Manda el pcb desde la cpu a la cola de espera de IO"""
         self.getWaiting().put(self.getCpu().getPCB())
         
     def sendPCBToReadyQueue(self, pcb):
+        """Manda un pcb a la cola de Ready"""
         self.getScheduler().put(pcb)
         
     def createNewProcess(self, pid):
+        """Delega al planificador de largo plazo
+           la carga de un proceso en memoria"""
         self.getLongTerm().load(pid)
         
     def removeProcessFromMemory(self, pcb):
+        """Delega al planificador de largo plazo
+           la eliminacion de un proceso de la memoria logica"""
         self.getLongTerm().removeProcess(pcb)        
         
     def turnToKernelMode(self):
@@ -107,6 +121,10 @@ class Kernel():
         self.setKernelMode(False)
         
     def turnOn(self):
+        """Prende los threads del clock,
+           dispositivo de IO, hace un contextSwitch
+           para que empiece el ciclo y se pone
+           el mismo como corriendo"""
         self.contextSwitch()
         self.getClock().startUp()
         self.getIO().startUp()

@@ -18,6 +18,9 @@ class AddProcessToReadyQueue(Interruption):
         self.pcb = pcb
     
     def interruptionMethod(self, kernel):
+        """Manda el PCB a Ready, si el kernel esta apagado, lo prende.
+           Si esta prendido y la CPU no esta ejecutando ningun proceso,
+           hace un contextSwitch"""
         kernel.sendPCBToReadyQueue(self.getPCB())
         if not kernel.getIsRunning():
             kernel.turnOn()

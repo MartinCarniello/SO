@@ -30,25 +30,18 @@ from consola.Consola import *
 if __name__ == '__main__':
     
     freeBlock1 = Block(0, 49)
-    #freeBlock2 = Block(31, 40)
-    #freeBlock3 = Block(51, 56)
-        
-    #occupedBlock1 = Block(6, 30)
-    #occupedBlock2 = Block(41, 50)
-    #occupedBlock3 = Block(57, 59)
                 
     freeBlocks = FreeBlock()
     freeBlocks.put(freeBlock1)
-    #freeBlocks.put(freeBlock2)
-    #freeBlocks.put(freeBlock3)
-                
+    
+
     occupedBlocks = OccupedBlock()
-    #occupedBlocks.put(mock(), occupedBlock1)
-    #occupedBlocks.put(mock(), occupedBlock2)
-    #occupedBlocks.put(mock(), occupedBlock3)
-        
+    
+
     memory = Memory(50)
            
+    #Se puede elegir cualquiera de estas tres tecnicas
+    
     firstFit = FirstFit(freeBlocks, occupedBlocks, memory)
     #bestFit = BestFit(freeBlocks, occupedBlocks, memory)
     #worstFit = WorstFit(freeBlocks, occupedBlocks, memory)
@@ -67,7 +60,10 @@ if __name__ == '__main__':
     page2a = [ai1p2, ai2p2, ai3p2]
     page3a = [ai1p3, ai2p3, ai3p3]
         
-    pagesProcessa = ProcessPages() #Se puede poner la prioridad
+    #Se puede poner la prioridad, pasandole por parametro al constructor un numero.
+    #NOTA: La prioridad menor es mayor (EJ: 2 tiene mas prioridad que 3)
+    #NOTA2: Si se le da prioridad, hay que cambiar la cola de ReadyFIFO por Priority.
+    pagesProcessa = ProcessPages()
         
     pagesProcessa.getPages().append(page1a)
     pagesProcessa.getPages().append(page2a)
@@ -81,6 +77,9 @@ if __name__ == '__main__':
     page1b = [bi1p1, bi2p1]
     page2b = [bi1p2, bi2p2]
         
+    #Se puede poner la prioridad, pasandole por parametro al constructor un numero.
+    #NOTA: La prioridad menor es mayor (EJ: 2 tiene mas prioridad que 3)
+    #NOTA2: Si se le da prioridad, hay que cambiar la cola de ReadyFIFO por Priority.
     pagesProcessb = ProcessPages() #Se puede poner la prioridad
         
     pagesProcessb.getPages().append(page1b)
@@ -90,15 +89,26 @@ if __name__ == '__main__':
     
     hdd.setPages({1: pagesProcessa, 2: pagesProcessb})
     
+    #Si se eligio otro metodo de asignacion, hay que pasarle el mismo por parametro a la cpu.
     cpu = Cpu(firstFit)
+    
+    #La politica de ejecucion puede ser simple o round robin.
+    #Si es round robin, se le pasa el quantum al constructor por parametro.
     policy = Simple()
     #policy = RoundRobin(2)
+    
+    #Si se le pusieron prioridad a las paginas del proceso, se debera seleccionar la cola con prioridad.
     scheduler = ReadyFIFO(cpu, policy)
     #scheduler = ReadyPriority(cpu, policy)
+    
+    #Si se eligio otro metodo de asignacion, hay que pasarle el mismo por parametro al dispositivo de IO.
     io = IO(firstFit)
+    
     end = End()
     longTerm = LongTerm()
     longTerm.setHdd(hdd)
+    
+    #Si se eligio otro metodo de asignacion, hay que pasarle el mismo por parametro a la MMU.
     longTerm.setMmu(firstFit)
 
     clock = Clock()

@@ -12,11 +12,8 @@ from pcb.PCB import PCB
 from pcb.PCBPriority import PCBPriority
 
 class ContinuosMapping(MMU):
-    def __init__(self, freeBlocks, occupedBlocks, memory):
-        MMU.__init__(self, memory)
-        self.freeBlocks = freeBlocks
-        self.occupedBlocks = occupedBlocks
-        
+
+    """Getters y Setters"""    
     def setFreeBlocks(self, freeBlocks):
         self.freeBlocks = freeBlocks
         
@@ -29,6 +26,14 @@ class ContinuosMapping(MMU):
     def setMemory(self, memory):
         self.memory = memory
 
+    
+    """Constructor"""
+    def __init__(self, freeBlocks, occupedBlocks, memory):
+        MMU.__init__(self, memory)
+        self.freeBlocks = freeBlocks
+        self.occupedBlocks = occupedBlocks
+        
+    
     def putFreeBlock(self, aFreeBlock):
         self.getFreeBlocks().put(aFreeBlock)
 
@@ -42,6 +47,7 @@ class ContinuosMapping(MMU):
         return self.occupedBlocks
 
     def getSizeOfBiggestBlock(self):
+        """Retorna el tamanho del bloque mas grande"""
         blockSize = 0
 
         for block in self.getFreeBlocks().getBlocks():
@@ -51,6 +57,8 @@ class ContinuosMapping(MMU):
         return blockSize
 
     def getFreeSpace(self):
+        """Retorna el espacio libre total de toda
+           la memoria"""
         freeSpace = 0
 
         for b in self.getFreeBlocks().getBlocks():
@@ -59,7 +67,17 @@ class ContinuosMapping(MMU):
         return freeSpace
 
     def memoryCompact(self):
-
+        """Agarra el primer bloque ocupado, si la base es distinta de cero, debera ser procesado.
+           Se guarda el tamanho y la base actual, la base nueva debera ser cero y el limite el tamanho
+           menos uno. Se asignan esos valores tanto para el bloque, para el pcb asociado al mismo
+           y se mueven los bloques en memoria fisica.
+           Luego se empiezan a procesar los demas bloques a partir del segundo, si es que los hay.
+           Se guarda la base actual, el movimiento (La cantidad de marcos hacia arriba que debe 
+           desplazarse) se le resta a la base y al limite el desplazamiento. Se setean esos valores
+           al bloque, al pcb asociado con ese bloque y se mueven los bloques en la memoria fisica.
+           Por ultimo se crea un solo bloque libre: La base es el limite del ultimo bloque ocupado
+           mas uno y el limite es el ultimo marco de la memoria. Y se setea a la lista de bloques
+           libres"""
         firstOccupedBlock = self.getOccupedBlocks().getBlocks()[0]
 
         if firstOccupedBlock[1].getBase() != 0:
@@ -108,6 +126,13 @@ class ContinuosMapping(MMU):
 
 
     def moveBlockInMemory(self, oldBase, base, limit):
+        """EJ:
+               ob = 5
+               b = 0
+               En la primera iteracion se movera lo que hay en el marco 5,
+               al marco 0. Ahora ob = 6 y b = 1.
+               Se repite esto tantas veces como cantidad de instrucciones
+               tenga el proceso"""
         b = base
         ob = oldBase
         
@@ -119,6 +144,11 @@ class ContinuosMapping(MMU):
         
 
     def load(self, blockList, pid):
+        """Pide un bloque libre que sea igual o mayor que el tamanho
+           del proceso. Si lo encuentra lo asigna. Si no lo encuentra
+           pregunta cual es el tamanho total de la memoria. Si este
+           es mayor que el tamanho del proceso, se prepara para hacer una
+           compactacion para poder asignar el bloque"""
         
         pcb = None
         
@@ -129,12 +159,17 @@ class ContinuosMapping(MMU):
         else:
             if self.getFreeSpace() >= blockList.size():
                 self.memoryCompact()
+                memBlock = self.getFreeBlock(blockList.size())
                 pcb = self.assignBlock(pid, memBlock, blockList)
                 
         return pcb
                 
     def assignBlock(self, pid, memBlock, blockList):
-
+        """Crea un nuevo pcb, asigna la base y el limite al nuevo
+           pcb. Si el pcb tiene prioridad, crea un pcb con prioridad.
+           Crea un bloque, asigna la base y el limite al nuevo
+           bloque."""
+        
         memBase = memBlock.getBase()
         blockSize = blockList.size()
         priority = blockList.getPriority()
@@ -165,6 +200,7 @@ class ContinuosMapping(MMU):
         return self.getMemory().getMemoryFrames()[instructionIndex]
     
     def removeProcess(self, pcb):
+        """Remueve un proceso del bloque en el cual esta asociado"""
         
         occupedBlocks = OccupedBlock()
         
@@ -178,12 +214,14 @@ class ContinuosMapping(MMU):
 
 class FirstFit(ContinuosMapping):
     def getFreeBlock(self, size):
+        """Retorna el primer bloque que sea mayor a size"""
         for block in self.getFreeBlocks().getBlocks():
             if block.size() >= size:
                 return block
 
 class BestFit(ContinuosMapping):
     def getFreeBlock(self, blockSize):
+        """Retorna el bloque que mas se ajuste a size"""
         biggestBlockSize = self.getSizeOfBiggestBlock()
         block = None
 
@@ -196,6 +234,8 @@ class BestFit(ContinuosMapping):
 
 class WorstFit(ContinuosMapping):
     def getFreeBlock(self, blockSize):
+        """Devuelve siempre el bloque mas grande, siempre y cuando
+           sea mayor o igual a size"""
         biggestBlockSize = self.getSizeOfBiggestBlock()
         b = None
 

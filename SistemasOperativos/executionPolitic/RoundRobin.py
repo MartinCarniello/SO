@@ -8,11 +8,8 @@ from executionPolitic.ExecutionPolitic import ExecutionPolitic
 from kernel.TimeOutInterruption import TimeOutInterruption
 
 class RoundRobin(ExecutionPolitic):
-    def __init__(self, quantum, kernel=None):
-        ExecutionPolitic.__init__(self, kernel)
-        self.quantum = quantum
-        self.actual = 0
 
+    """Getters y Setters"""
     def getActual(self):
         return self.actual
 
@@ -21,6 +18,14 @@ class RoundRobin(ExecutionPolitic):
 
     def getQuantum(self):
         return self.quantum
+
+    
+    """Constructor"""
+    def __init__(self, quantum, kernel=None):
+        ExecutionPolitic.__init__(self, kernel)
+        self.quantum = quantum
+        self.actual = 0
+
 
     def nextActual(self):
         self.setActual(self.getActual() + 1)

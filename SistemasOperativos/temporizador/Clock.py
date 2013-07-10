@@ -8,7 +8,8 @@ import threading
 import time
 
 class Clock(threading.Thread):
-
+    
+    """Getters y Setters"""
     def getRunning(self):
         return self.running
 
@@ -18,19 +19,25 @@ class Clock(threading.Thread):
     def getObservers(self):
         return self.observers
     
-    def addObserver(self, observer):
-        self.getObservers().append(observer)
-
+    
+    """Constructor"""
     def __init__(self):
         threading.Thread.__init__(self)
         self.setRunning(True)
         self.observers = []
+    
+    def addObserver(self, observer):
+        self.getObservers().append(observer)
         
     def run(self):
+        """De manera infinita, manda ciclos de
+           ejecucion al scheduler, cpu y dispositivo
+           de IO"""
         while(self.getRunning()):
             for observer in self.getObservers():
                 observer.executionCycle()
                 time.sleep(1)
         
     def startUp(self):
+        """Prende el thread del clock"""
         self.start()
